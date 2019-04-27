@@ -72,7 +72,7 @@ int  avi_avi_znk_ipe(char *znk, char *ipe);
 %}
 %debug
 %verbose
-%token IDENT PROC OPTIONS MAIN END DCL BIN FIXED NUM INIT
+%token IDENT PROC OPTIONS MAIN END DCL BIN FIXED NUM INIT CHAR BIT
 %left ZNK
 %start pro
 %%
@@ -87,6 +87,7 @@ odc: odi
     | odr
      ;
 odi:  DCL ipe BIN FIXED '(' rzr ')' INIT '(' lit ')' ';' { odi($2, $6, $10); }
+     | DCL ipe CHAR '(' rzr ')' INIT '(\'' rzr '\')' ';' { odi($2, $6, $6); }
      ;
 odr:  DCL ipe BIN FIXED '(' rzr ')' ';'                  { odr($2, $6); }
      ;
@@ -109,6 +110,7 @@ avi: lit                                                 { avi_lit($1); }
     | ipe                                                { if ( avi_ipe($1) ) YYABORT;}
     | avi ZNK lit                                        { avi_avi_znk_lit($2, $3); }
     | avi ZNK ipe                                        { if ( avi_avi_znk_ipe($2, $3) ) YYABORT; }
+    | avi '||' ipe                                       { if ( avi_avi_znk_ipe($2, $3) ) YYABORT; }
      ;
 %%
 /*
@@ -297,7 +299,7 @@ int oen(char *pr_name) {
 
                 memcpy(&ImpPart[pImpPart][0], &s1[0], 80);
                 pImpPart++;
-                return 0; 
+                return 0;
                }
                else {
                 strcpy(&ErrorMessage[0], " invalid identificator ");

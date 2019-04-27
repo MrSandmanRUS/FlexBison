@@ -44,6 +44,8 @@ extern YYSTYPE yylval;
                        if (!memcmp(yytext,"bin", 3)) return BIN;
                        if (!memcmp(yytext,"fixed", 3)) return FIXED;
                        if (!memcmp(yytext,"init", 3)) return INIT;
+                       if (!memcmp(yytext,"char", 4)) return CHAR;
+                       if (!memcmp(yytext,"bit", 3)) return BIT;
                        yylval=strdup(yytext); return IDENT;
                      }
 [0-9][0-9]*          {
