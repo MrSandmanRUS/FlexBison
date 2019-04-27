@@ -481,6 +481,34 @@ int  avi_avi_znk_ipe(char *znk, char *ipe) {
                 return 0;
 }
 
+void add_asm_command (const char* label,
+                      const char* operation,
+                      const char* operands,
+                      const char* comment
+                      )
+{
+    memset (&ImpPart[pImpPart], ' ', 80);
+    memcpy (&ImpPart[pImpPart][0],  label,     strlen(label));
+    memcpy (&ImpPart[pImpPart][9],  operation, strlen(operation));
+    memcpy (&ImpPart[pImpPart][15], operands,  strlen(operands));
+    memcpy (&ImpPart[pImpPart][30], comment,   strlen(comment));
+
+    ++pImpPart;}
+void add_dcl_command (const char* label,
+                      const char* operation,
+                      const char* operands,
+                      const char* comment
+                      )
+{
+    memset (&DclPart[pDclPart], ' ', 80);
+    memcpy (&DclPart[pDclPart][0],  label,     strlen(label));
+    memcpy (&DclPart[pDclPart][9],  operation, strlen(operation));
+    memcpy (&DclPart[pDclPart][15], operands,  strlen(operands));
+    memcpy (&DclPart[pDclPart][30], comment,   strlen(comment));
+    ++pDclPart;
+}
+
+
 /*
 ***************************************************************************************************************
 *                   Конец  библиотеки семантических программ                                                  *
