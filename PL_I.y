@@ -87,7 +87,7 @@ odc: odi
     | odr
      ;
 odi:  DCL ipe BIN FIXED '(' rzr ')' INIT '(' lit ')' ';' { odi($2, $6, $10, "BIN"); }
-     | DCL ipe CHAR '(' rzr ')' INIT '(' rzr ')' ';' { odi($2, $5, $9, "CHAR"); }
+     | DCL ipe CHAR '(' rzr ')' INIT '(' cif ')' ';' { odi($2, $5, $9, "CHAR"); }
      | DCL ipe BIT '(' rzr ')' ';' { odi($2, $5, "0", "BIT"); }
      ;
 odr:  DCL ipe BIN FIXED '(' rzr ')' ';'                  { odr($2, $6); }
@@ -95,6 +95,8 @@ odr:  DCL ipe BIN FIXED '(' rzr ')' ';'                  { odr($2, $6); }
 ipe: IDENT {$$=$1;}
      ;
 rzr: NUM {$$=$1;}
+     ;
+cif: NUM {$$=$1;}
      ;
 lit: NUM {$$=$1;}
      ;
