@@ -28,7 +28,10 @@ extern YYSTYPE yylval;
 //                       printf("\n***lex: term=%s;\n", yytext);
                        return '=';
                      }
-
+"|"                  {
+//                       printf("\n***lex: term=%s;\n", yytext);
+                       return '|';
+                     }
 [+-]                 {
 //                       printf("\n***lex: term=%s;\n", yytext);
                        yylval=strdup(yytext); return ZNK;

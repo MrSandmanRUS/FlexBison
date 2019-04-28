@@ -55,7 +55,9 @@ extern int yydebug;
     FIXED = 265,
     NUM = 266,
     INIT = 267,
-    ZNK = 268
+    CHAR = 268,
+    BIT = 269,
+    ZNK = 270
   };
 #endif
 

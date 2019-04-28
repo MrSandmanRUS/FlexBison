@@ -59,7 +59,7 @@ void yyerror(const char *str) {
 }
 
 void pro();
-void odi(char *tpe, char *rzr, char *lit);
+void odi(char *tpe, char *rzr, char *lit, char *type);
 void odr(char *tpe, char *rzr);
 void opr(char *pr_name);
 int  oen(char *pr_name);
@@ -86,8 +86,9 @@ dec: odc
 odc: odi
     | odr
      ;
-odi:  DCL ipe BIN FIXED '(' rzr ')' INIT '(' lit ')' ';' { odi($2, $6, $10); }
-     | DCL ipe CHAR '(' rzr ')' INIT '(\'' rzr '\')' ';' { odi($2, $6, $6); }
+odi:  DCL ipe BIN FIXED '(' rzr ')' INIT '(' lit ')' ';' { odi($2, $6, $10, "BIN"); }
+     | DCL ipe CHAR '(' rzr ')' INIT '(' rzr ')' ';' { odi($2, $5, $9, "CHAR"); }
+     | DCL ipe BIT '(' rzr ')' ';' { odi($2, $5, "0", "BIT"); }
      ;
 odr:  DCL ipe BIN FIXED '(' rzr ')' ';'                  { odr($2, $6); }
      ;
@@ -110,7 +111,7 @@ avi: lit                                                 { avi_lit($1); }
     | ipe                                                { if ( avi_ipe($1) ) YYABORT;}
     | avi ZNK lit                                        { avi_avi_znk_lit($2, $3); }
     | avi ZNK ipe                                        { if ( avi_avi_znk_ipe($2, $3) ) YYABORT; }
-    | avi '||' ipe                                       { if ( avi_avi_znk_ipe($2, $3) ) YYABORT; }
+    | avi '|' '|' ipe                                       { if ( avi_avi_znk_ipe($2, $3) ) YYABORT; }
      ;
 %%
 /*
@@ -194,17 +195,23 @@ void pro()
 ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 */
 
-void odi(char *ipe, char *rzr, char *lit) {
+void odi(char *ipe, char *rzr, char *lit, char *type) {
                memset(&s1[0], ' ', 80);
                memcpy(&s1[0], ipe, strlen(ipe));
                memcpy(&s1[9], "DC", 2);
-               if(!memcmp(rzr, "31", 2))
-                s1[15]='F';
-               else
-                s1[15]='H';
-               s1[16]='\'';
-               memcpy(&s1[17], lit, strlen(lit));
-               s1[17+strlen(lit)]='\'';
+               if(!memcmp(type, "CHAR", 4)) {
+                s1[15]='C';
+                s1[16]='L';
+                memcpy(&s1[17], rzr, strlen(rzr));
+               }
+               else {
+                s1[15]='B';
+		s1[16]='L';
+		memcpy(&s1[17], rzr, strlen(rzr));
+               }
+               s1[18]='\'';
+               memcpy(&s1[19], lit, strlen(lit));
+               s1[19+strlen(lit)]='\'';
                memcpy(&s1[30], "Variable declaration with initialization", 40);
 
                memcpy(&DclPart[pDclPart][0], &s1[0], 80);
@@ -258,13 +265,13 @@ void opr(char *pr_name) {
                memcpy(&Prolog[0][0], &s1[0], 80);
 
                memset(&s1[0], ' ', 80);
-               memcpy(&s1[9], "BALR  RBASE,0", 13);
+               memcpy(&s1[9], "BALR  @RBASE,0", 14);
                memcpy(&s1[30], "Base initialization", 19);
                memcpy(&Prolog[1][0], &s1[0], 80);
 
 
                memset(&s1[0], ' ', 80);
-               memcpy(&s1[9], "USING *,RBASE", 13);
+               memcpy(&s1[9], "USING *,@RBASE", 14);
                memcpy(&s1[30], "Base declaration", 16);
                memcpy(&Prolog[2][0], &s1[0], 80);
 
@@ -431,6 +438,9 @@ void avi_avi_znk_lit(char *znk, char *lit) {
                  memcpy(&s1[9], "S", 1);
                  memcpy(&s1[30], "Literal\'s value substracting", 28);
                 }
+		if(!memcmp(znk, "||", 1)) {
+			
+		}
                 memcpy(&s1[15], "RRAB,=F\'", 8);
                 memcpy(&s1[23], lit, strlen(lit));
                 memcpy(&s1[23+strlen(lit)], "\'", 1);
@@ -550,13 +560,28 @@ int yywrap() {
 
 int main() {
  pAssProg=0;
- memset(&DclPart[0][0], ' ', 80);
- memcpy(&DclPart[0][0], "RBASE    EQU   5", 16);
- memset(&DclPart[1][0], ' ', 80);
- memcpy(&DclPart[1][0], "RVIX     EQU   14", 17);
- memset(&DclPart[2][0], ' ', 80);
- memcpy(&DclPart[2][0], "RRAB     EQU   3", 16);
- pDclPart=3;
+ pDclPart=0;
+ add_dcl_command ("@RBASE", "EQU", "15","");
+ add_dcl_command ("@RABP1", "DC", "CL9\' \'","");
+ add_dcl_command ("@RABP2", "EQU", "2","");
+ add_dcl_command ("@RABP3", "EQU", "3","");
+ add_dcl_command ("@RABP4", "EQU", "4","");
+ add_dcl_command ("@RABP5", "EQU", "5","");
+ add_dcl_command ("@RABP6", "EQU", "6","");
+ add_dcl_command ("@COUNTER", "DC", "F\'9\'","");
+ add_dcl_command ("@ZERO", "DC", "F\'0\'","");
+ add_dcl_command ("@ONENUMB", "DC", "BL32\'1\'","");
+ add_dcl_command ("", "DS", "0F","");
+ add_dcl_command ("@ONECHAR", "DC", "BL32\'0000000000001101\'","");
+ add_dcl_command ("@CONST", "DC", "F\'1\'","");
+
+// memset(&DclPart[0][0], ' ', 80);
+// memcpy(&DclPart[0][0], "RBASE    EQU   5", 16);
+// memset(&DclPart[1][0], ' ', 80);
+// memcpy(&DclPart[1][0], "RVIX     EQU   14", 17);
+// memset(&DclPart[2][0], ' ', 80);
+// memcpy(&DclPart[2][0], "RRAB     EQU   3", 16);
+// pDclPart=3;
  pImpPart=0;
 // yydebug=1;
  if (!yyparse()) {
