@@ -1,6 +1,6 @@
-ex1:proc options(main);
+examp13:proc options(main);
      dcl A char (5) init ('101');
      dcl B char (4) init ('1');
      dcl C bit (4);
      C=A||B;
-end ex1;
+end examp13;
