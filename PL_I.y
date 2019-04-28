@@ -11,9 +11,9 @@ YYSTYPE yylval;
 
 #define MAX_LENGTH_ASS_PROG 50
 
-#define MAX_LENGTH_DCL_PART 20
+#define MAX_LENGTH_DCL_PART 50
 
-#define MAX_LENGTH_IMP_PART 20
+#define MAX_LENGTH_IMP_PART 50
 
 char s1[80];
 
@@ -67,7 +67,7 @@ int  opa(char *ipe);
 void avi_lit(char *lit);
 int  avi_ipe(char *ipe);
 void avi_avi_znk_lit(char *znk, char *lit);
-int  avi_avi_znk_ipe(char *znk, char *ipe);
+int  avi_avi_znk_ipe(char *znk, char *avi, char *ipe);
 
 %}
 %debug
@@ -110,8 +110,8 @@ opa: ipe '=' avi ';'                                     { if ( opa($1) ) YYABOR
 avi: lit                                                 { avi_lit($1); }
     | ipe                                                { if ( avi_ipe($1) ) YYABORT;}
     | avi ZNK lit                                        { avi_avi_znk_lit($2, $3); }
-    | avi ZNK ipe                                        { if ( avi_avi_znk_ipe($2, $3) ) YYABORT; }
-    | avi '|' '|' ipe                                       { if ( avi_avi_znk_ipe($2, $3) ) YYABORT; }
+    | avi ZNK ipe                                        { if ( avi_avi_znk_ipe($2, "", $3) ) YYABORT; }
+    | avi '|' '|' ipe                                    { if ( avi_avi_znk_ipe("|", $1, $4) ) YYABORT; }
      ;
 %%
 /*
@@ -301,7 +301,7 @@ int oen(char *pr_name) {
                 memcpy(&Epilog[0], &s1[0], 80);
 
                 memset(&s1[0], ' ', 80);
-                memcpy(&s1[9], "BCR   15,RVIX", 13);
+                memcpy(&s1[9], "BCR   15,14", 11);
                 memcpy(&s1[30], "Return from programm", 20);
 
                 memcpy(&ImpPart[pImpPart][0], &s1[0], 80);
@@ -342,9 +342,9 @@ int opa(char *ipe) {
                 return 1;
                 }
                 memset(&s1[0], ' ', 80);
-                memcpy(&s1[9], "ST", 2);
-                memcpy(&s1[15], "RRAB,", 5);
-                memcpy(&s1[20], ipe, strlen(ipe));
+                memcpy(&s1[9], "STC", 3);
+                memcpy(&s1[15], "@RABP2,", 7);
+                memcpy(&s1[22], ipe, strlen(ipe));
                 memcpy(&s1[30], "Result storage", 14);
 
                 memcpy(&ImpPart[pImpPart][0], &s1[0], 80);
@@ -402,14 +402,14 @@ int  avi_ipe(char *ipe) {
                 yyerror(&ErrorMessage[0]);
                 return 1;
                 }
-                memset(&s1[0], ' ', 80);
-                memcpy(&s1[9], "L", 1);
-                memcpy(&s1[15], "RRAB,", 5);
-                memcpy(&s1[20], ipe, strlen(ipe));
-                memcpy(&s1[30], "Variable value loading", 22);
+                //memset(&s1[0], ' ', 80);
+                //memcpy(&s1[9], "L", 1);
+                //memcpy(&s1[15], "RRAB,", 5);
+                //memcpy(&s1[20], ipe, strlen(ipe));
+                //memcpy(&s1[30], "Variable value loading", 22);
 
-                memcpy(&ImpPart[pImpPart][0], &s1[0], 80);
-                pImpPart++;
+                //memcpy(&ImpPart[pImpPart][0], &s1[0], 80);
+                //pImpPart++;
 
                 return 0;
 }
@@ -438,12 +438,9 @@ void avi_avi_znk_lit(char *znk, char *lit) {
                  memcpy(&s1[9], "S", 1);
                  memcpy(&s1[30], "Literal\'s value substracting", 28);
                 }
-		if(!memcmp(znk, "||", 1)) {
-			
-		}
-                memcpy(&s1[15], "RRAB,=F\'", 8);
-                memcpy(&s1[23], lit, strlen(lit));
-                memcpy(&s1[23+strlen(lit)], "\'", 1);
+                //memcpy(&s1[15], "RRAB,=F\'", 8);
+                //memcpy(&s1[23], lit, strlen(lit));
+                //memcpy(&s1[23+strlen(lit)], "\'", 1);
 
                 memcpy(&ImpPart[pImpPart][0], &s1[0], 80);
                 pImpPart++;
@@ -464,7 +461,7 @@ void avi_avi_znk_lit(char *znk, char *lit) {
 .....,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 */
 
-int  avi_avi_znk_ipe(char *znk, char *ipe) {
+int  avi_avi_znk_ipe(char *znk, char *avi, char *ipe) {
                 if (IsDclName(ipe, strlen(ipe))){
                 strcpy(&ErrorMessage[0], " invalid identificator ");
                 strcat(&ErrorMessage[0], ipe);
@@ -474,19 +471,62 @@ int  avi_avi_znk_ipe(char *znk, char *ipe) {
                 return 1;
                 }
                 memset(&s1[0], ' ', 80);
+
+
                 if(!memcmp(znk, "+", 1)) {
                  memcpy(&s1[9], "A", 1);
                  memcpy(&s1[30], "Variable\'s value adding", 23);
+                 memcpy(&s1[15], "RRAB,", 5);
+                 memcpy(&s1[20], ipe, strlen(ipe));
+
+                memcpy(&ImpPart[pImpPart][0], &s1[0], 80);
+                pImpPart++;
                 }
                 if(!memcmp(znk, "-", 1)) {
                  memcpy(&s1[9], "S", 1);
                  memcpy(&s1[30], "Variable\'s value substracting", 29);
-                }
-                memcpy(&s1[15], "RRAB,", 5);
-                memcpy(&s1[20], ipe, strlen(ipe));
 
-                memcpy(&ImpPart[pImpPart][0], &s1[0], 80);
-                pImpPart++;
+                 memcpy(&s1[15], "RRAB,", 5);
+                 memcpy(&s1[20], ipe, strlen(ipe));
+
+                 memcpy(&ImpPart[pImpPart][0], &s1[0], 80);
+                 pImpPart++;
+                }
+                if(!memcmp(znk, "|", 1)) {
+		 //memcpy(&s1[9], "A", 1);
+                 //memcpy(&s1[30], "Variable\'s value adding", 23);
+                 //memcpy(&s1[15], "RRAB,", 5);
+                 //memcpy(&s1[20], ipe, strlen(ipe));
+
+                //memcpy(&ImpPart[pImpPart][0], &s1[0], 80);
+                //pImpPart++;
+		 char operands1 [16];
+                 sprintf (operands1, "@RABP1(5),%s", avi);
+		 add_asm_command("", "MVC", operands1, "Copy value for 1st variable");
+                 char operands2 [16];
+                 sprintf (operands1, "@RABP2+5(4),%s", ipe);
+		 add_asm_command("", "MVC", operands1, "Copy value for 2nd variable");
+		 add_asm_command("", "L", "@RABP2,@ZERO", "Load zero value");
+		 add_asm_command("", "L", "@RABP3,@ONENUMB", " Load onenumb value");
+		 add_asm_command("", "LA", "@RABP5,@RABP1", "Load address");
+		 add_asm_command("", "L", "@RABP6,@ZERO", "Load zero value");
+		 add_asm_command("L2", "C", "@RABP6,@COUNTER", " Compare iteration num");
+		add_asm_command("", "BC", "8,L3", "Go to L3");
+		add_asm_command("L4", "L", "@RABP4,@ZERO", "Loade zero value");
+		add_asm_command("", "IC", "@RABP4,0(@RABP5,@RABP6)", "");
+		add_asm_command("", "CR", "@RABP4,@ONECHAR", " Compare with onechar");
+		add_asm_command("", "BC", "8,L1", "Go to L1");
+		add_asm_command("", "SRL", "@RABP3,1", "Right shift");
+		add_asm_command("", "A", "@RABP6,@CONST", "Counter increment");
+		add_asm_command("", "BC", "15,L2", "Go to L2");
+		add_asm_command("L1", "OR", "@RABP2,@RABP3", "OR operation");
+		add_asm_command("", "SRL", "@RABP3,1", "Right shift");
+		add_asm_command("", "A", "@RABP6,@CONST", "Counter increment");
+		add_asm_command("", "BC", "15,L2", "Go to L2");
+		add_asm_command("L3", "SRL", "@RABP2,24", "Right shift");
+
+
+		}
 
                 return 0;
 }
@@ -503,7 +543,8 @@ void add_asm_command (const char* label,
     memcpy (&ImpPart[pImpPart][15], operands,  strlen(operands));
     memcpy (&ImpPart[pImpPart][30], comment,   strlen(comment));
 
-    ++pImpPart;}
+    ++pImpPart;
+}
 void add_dcl_command (const char* label,
                       const char* operation,
                       const char* operands,
